@@ -58,8 +58,9 @@ public class GamePanel extends JPanel implements ActionListener {
         int safeYMin = TILE_SIZE;
         int safeXMax = WIDTH - TILE_SIZE - coinSize;
         int safeYMax = HEIGHT - TILE_SIZE - coinSize;
-        int coinsNum = 12;
+        int coinsNum = 10;
 
+        // Generate Random coins
         for (int i = 0; i < coinsNum; i++) {
             int x, y;
             boolean validPosition;
@@ -67,10 +68,11 @@ public class GamePanel extends JPanel implements ActionListener {
                 x = safeXMin + (int) (Math.random() * (safeXMax - safeXMin + 1));
                 y = safeYMin + (int) (Math.random() * (safeYMax - safeYMin + 1));
 
-                Rectangle newCoinBounds = new Rectangle(x, y, 16, 16);
+                Rectangle newCoinBounds = new Rectangle(x, y, coinSize, coinSize);
 
                 validPosition = true;
 
+                 // Check if coin intersect with anothor coin 
                 for (Coin c : coins) {
                     if (c.getBounds().intersects(newCoinBounds)) {
                         validPosition = false;
@@ -78,6 +80,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     }
                 }
 
+                // Check if player position intersect with coin position
                 if (player.getBounds().intersects(newCoinBounds)) {
                     validPosition = false;
                 }

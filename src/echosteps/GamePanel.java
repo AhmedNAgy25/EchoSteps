@@ -26,6 +26,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private boolean showCoinGlow = false;
     private int glowTimer = 0;
     private Rectangle[] walls;
+    private SoundManager soundManager;
 
     public GamePanel() {
         coinFont = new Font("Monospaced", Font.BOLD, 24);
@@ -33,6 +34,9 @@ public class GamePanel extends JPanel implements ActionListener {
         setBackground(GameConstants.BACKGROUND_COLOR);
         setFocusable(true);
         addKeyListener(new KeyInput());
+        
+        // Initialize sound manager
+        soundManager = new SoundManager();
         
         // Initialize walls
         walls = new Rectangle[] {
@@ -114,17 +118,20 @@ public class GamePanel extends JPanel implements ActionListener {
                 showCoinGlow = true;
                 glowTimer = GameConstants.COIN_GLOW_DURATION;
                 collectedCoin = false;
+                soundManager.playCoinSound();
             }
 
             // Check win condition
             if (coins.isEmpty()) {
                 gameOver = true;
+                soundManager.playWinSound();
                 System.out.println("🎉 YOU WIN!");
             }
 
             // Check lose condition
             if (player.getBounds().intersects(ghost.getBounds())) {
                 gameOver = true;
+                soundManager.playLoseSound();
                 System.out.println("💀 GAME OVER!");
             }
 
@@ -190,6 +197,9 @@ public class GamePanel extends JPanel implements ActionListener {
                 repaint();
                 return;
             }
+            if (e.getKeyCode() == KeyEvent.VK_M) {
+                soundManager.toggleMute();
+            }
             player.keyPressed(e);
         }
 
@@ -197,5 +207,9 @@ public class GamePanel extends JPanel implements ActionListener {
         public void keyReleased(KeyEvent e) {
             player.keyReleased(e);
         }
+    }
+
+    public void cleanup() {
+        soundManager.cleanup();
     }
 }

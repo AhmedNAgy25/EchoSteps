@@ -1,10 +1,11 @@
 package echosteps;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -14,31 +15,35 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class GamePanel extends JPanel implements ActionListener {
-
-    private final int TILE_SIZE = 32;
-    private final int WIDTH = 800, HEIGHT = 600;
     private Timer timer;
     private Player player;
     private ArrayList<Coin> coins;
     private Ghost ghost;
     private boolean gameOver = false;
     private boolean collectedCoin = false;
-
-    // Coin counter style
     private Font coinFont;
     private int coinsCollected = 0;
     private boolean showCoinGlow = false;
     private int glowTimer = 0;
+    private Rectangle[] walls;
 
     public GamePanel() {
         coinFont = new Font("Monospaced", Font.BOLD, 24);
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        setBackground(Color.BLACK);
+        setPreferredSize(new Dimension(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT));
+        setBackground(GameConstants.BACKGROUND_COLOR);
         setFocusable(true);
         addKeyListener(new KeyInput());
+        
+        // Initialize walls
+        walls = new Rectangle[] {
+            new Rectangle(0, 0, GameConstants.TILE_SIZE, GameConstants.WINDOW_HEIGHT), // Left wall
+            new Rectangle(GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE, 0, GameConstants.TILE_SIZE, GameConstants.WINDOW_HEIGHT), // Right wall
+            new Rectangle(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.TILE_SIZE), // Top wall
+            new Rectangle(0, GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE, GameConstants.WINDOW_WIDTH, GameConstants.TILE_SIZE) // Bottom wall
+        };
 
         resetGame();
-        timer = new Timer(16, this);
+        timer = new Timer(GameConstants.GAME_TICK_RATE, this);
         timer.start();
     }
 
@@ -47,32 +52,30 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void resetGame() {
-        player = new Player(TILE_SIZE * 2, TILE_SIZE * 2);
+        player = new Player(GameConstants.TILE_SIZE * 2, GameConstants.TILE_SIZE * 2);
         coins = new ArrayList<>();
-        ghost = new Ghost(WIDTH - TILE_SIZE * 3, HEIGHT - TILE_SIZE * 3);
+        ghost = new Ghost(GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE * 3, 
+                         GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE * 3);
         coinsCollected = 0;
         gameOver = false;
 
-        int coinSize = 16;
-        int safeXMin = TILE_SIZE;
-        int safeYMin = TILE_SIZE;
-        int safeXMax = WIDTH - TILE_SIZE - coinSize;
-        int safeYMax = HEIGHT - TILE_SIZE - coinSize;
-        int coinsNum = 10;
+        int safeXMin = GameConstants.TILE_SIZE;
+        int safeYMin = GameConstants.TILE_SIZE;
+        int safeXMax = GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE - GameConstants.COIN_SIZE;
+        int safeYMax = GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE - GameConstants.COIN_SIZE;
 
         // Generate Random coins
-        for (int i = 0; i < coinsNum; i++) {
+        for (int i = 0; i < GameConstants.INITIAL_COINS; i++) {
             int x, y;
             boolean validPosition;
             do {
                 x = safeXMin + (int) (Math.random() * (safeXMax - safeXMin + 1));
                 y = safeYMin + (int) (Math.random() * (safeYMax - safeYMin + 1));
 
-                Rectangle newCoinBounds = new Rectangle(x, y, coinSize, coinSize);
-
+                Rectangle newCoinBounds = new Rectangle(x, y, GameConstants.COIN_SIZE, GameConstants.COIN_SIZE);
                 validPosition = true;
 
-                 // Check if coin intersect with anothor coin 
+                // Check if coin intersects with another coin
                 for (Coin c : coins) {
                     if (c.getBounds().intersects(newCoinBounds)) {
                         validPosition = false;
@@ -80,7 +83,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     }
                 }
 
-                // Check if player position intersect with coin position
+                // Check if player position intersects with coin position
                 if (player.getBounds().intersects(newCoinBounds)) {
                     validPosition = false;
                 }
@@ -89,17 +92,15 @@ public class GamePanel extends JPanel implements ActionListener {
 
             coins.add(new Coin(x, y));
         }
-
     }
 
     @Override
-    public void actionPerformed(ActionEvent e
-    ) {
+    public void actionPerformed(ActionEvent e) {
         if (!gameOver) {
             player.move();
             ghost.chasePlayer(player.getX(), player.getY());
 
-            collectedCoin = false;
+            // Check coin collection
             coins.removeIf(coin -> {
                 if (player.getBounds().intersects(coin.getBounds())) {
                     collectedCoin = true;
@@ -111,14 +112,17 @@ public class GamePanel extends JPanel implements ActionListener {
             if (collectedCoin) {
                 coinsCollected++;
                 showCoinGlow = true;
-                glowTimer = 15;
+                glowTimer = GameConstants.COIN_GLOW_DURATION;
+                collectedCoin = false;
             }
 
+            // Check win condition
             if (coins.isEmpty()) {
                 gameOver = true;
                 System.out.println("🎉 YOU WIN!");
             }
 
+            // Check lose condition
             if (player.getBounds().intersects(ghost.getBounds())) {
                 gameOver = true;
                 System.out.println("💀 GAME OVER!");
@@ -129,61 +133,56 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     @Override
-    public void paintComponent(Graphics g
-    ) {
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        
+        // Enable anti-aliasing
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
         if (!gameOver) {
-            g.setColor(new Color(40, 40, 40));
-            g.fillRect(0, 0, WIDTH, HEIGHT);
-            drawWalls(g);
-
-            player.draw(g);
-            ghost.draw(g);
-            for (Coin coin : coins) {
-                coin.draw(g);
+            // Draw background
+            g2d.setColor(GameConstants.BACKGROUND_COLOR);
+            g2d.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
+            
+            // Draw walls
+            g2d.setColor(GameConstants.WALL_COLOR);
+            for (Rectangle wall : walls) {
+                g2d.fill(wall);
             }
 
-            drawCoinCounter(g);
-        } else {
-            g.setColor(Color.RED);
-            g.drawString("GAME OVER! Press R to Restart", 300, 300);
-        }
-    }
+            // Draw game entities
+            player.draw(g2d);
+            ghost.draw(g2d);
+            for (Coin coin : coins) {
+                coin.draw(g2d);
+            }
 
-    private void drawWalls(Graphics g) {
-        g.setColor(Color.GRAY);
-        for (int x = 0; x < WIDTH; x += TILE_SIZE) {
-            g.fillRect(x, 0, TILE_SIZE, TILE_SIZE);
-        }
-        for (int x = 0; x < WIDTH; x += TILE_SIZE) {
-            g.fillRect(x, HEIGHT - TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        }
-        for (int y = 0; y < HEIGHT; y += TILE_SIZE) {
-            g.fillRect(0, y, TILE_SIZE, TILE_SIZE);
-        }
-        for (int y = 0; y < HEIGHT; y += TILE_SIZE) {
-            g.fillRect(WIDTH - TILE_SIZE, y, TILE_SIZE, TILE_SIZE);
+            // Draw coin counter
+            drawCoinCounter(g2d);
+        } else {
+            g2d.setColor(java.awt.Color.RED);
+            g2d.drawString("GAME OVER! Press R to Restart", 300, 300);
         }
     }
 
     private void drawCoinCounter(Graphics g) {
         if (showCoinGlow && glowTimer > 0) {
-            g.setColor(new Color(255, 215, 0));
+            g.setColor(new java.awt.Color(255, 215, 0));
             glowTimer--;
         } else {
-            g.setColor(new Color(255, 223, 0));
+            g.setColor(new java.awt.Color(255, 223, 0));
             showCoinGlow = false;
         }
 
         g.setFont(coinFont);
         g.fillOval(20, 10, 16, 16);
-        g.setColor(Color.BLACK);
+        g.setColor(java.awt.Color.BLACK);
         g.drawOval(20, 10, 16, 16);
         g.drawString("x " + coinsCollected, 45, 28);
     }
 
     private class KeyInput extends KeyAdapter {
-
         @Override
         public void keyPressed(KeyEvent e) {
             if (gameOver && e.getKeyCode() == KeyEvent.VK_R) {

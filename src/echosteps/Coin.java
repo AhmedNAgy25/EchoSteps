@@ -1,37 +1,36 @@
 package echosteps;
 
-import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
 public class Coin {
-
     private int x, y;
-    private final int SIZE = 16;
+    private final Rectangle bounds;
 
     public Coin(int x, int y) {
         this.x = x;
         this.y = y;
+        this.bounds = new Rectangle(x, y, GameConstants.COIN_SIZE, GameConstants.COIN_SIZE);
     }
 
     public void draw(Graphics g) {
-        g.setColor(Color.YELLOW);
-        g.fillOval(x, y, SIZE, SIZE);
+        g.setColor(GameConstants.COIN_COLOR);
+        g.fillOval(x, y, GameConstants.COIN_SIZE, GameConstants.COIN_SIZE);
 
-        g.setColor(Color.BLACK);
+        g.setColor(java.awt.Color.BLACK);
         FontMetrics fm = g.getFontMetrics();
         int textWidth = fm.stringWidth("$");
         int textHeight = fm.getHeight();
-        int textX = x + (SIZE - textWidth) / 2;
-        int textY = y + (SIZE + textHeight) / 2 - fm.getDescent();
+        int textX = x + (GameConstants.COIN_SIZE - textWidth) / 2;
+        int textY = y + (GameConstants.COIN_SIZE + textHeight) / 2 - fm.getDescent();
         g.drawString("$", textX, textY);
 
-        g.setColor(Color.BLACK);
-        g.drawOval(x, y, SIZE, SIZE);
+        g.setColor(java.awt.Color.BLACK);
+        g.drawOval(x, y, GameConstants.COIN_SIZE, GameConstants.COIN_SIZE);
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x, y, SIZE, SIZE);
+        return bounds;
     }
 }

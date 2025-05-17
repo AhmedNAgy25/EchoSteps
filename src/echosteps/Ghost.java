@@ -1,85 +1,91 @@
 package echosteps;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 
 public class Ghost {
-
     private int x, y;
-    private final int SIZE = 32;
-    private final int SPEED = 4;
+    private int moveTimer = 0;
+    private int lastX, lastY;
+    private boolean isMoving = false;
+    private final Rectangle bounds;
 
     public Ghost(int x, int y) {
         this.x = x;
         this.y = y;
+        this.lastX = x;
+        this.lastY = y;
+        this.bounds = new Rectangle(x, y, GameConstants.GHOST_SIZE, GameConstants.GHOST_SIZE);
     }
-    
-    /*
-    
-     * Moves the ghost towards the target position (e.g., player), with a small
-     * delay and randomness to simulate smarter or more natural behavior. -
-     * Moves only every 3 frames (based on moveTimer). - Has a 20% chance to
-     * skip movement to create unpredictable behavior. - Adjusts X and Y
-     * position to move closer to the target.
-    
-     */
-
-    private int moveTimer = 0;
 
     public void chasePlayer(int targetX, int targetY) {
+        lastX = x;
+        lastY = y;
+        
         moveTimer++;
 
-        if (moveTimer % 3 != 0) {
+        if (moveTimer % GameConstants.GHOST_MOVE_DELAY != 0) {
             return;
         }
 
-        // 20% chance to pause
-        if (Math.random() < 0.2) {
+        if (Math.random() < GameConstants.GHOST_PAUSE_CHANCE) {
             return;
         }
 
-        if (x < targetX) {
-            x += SPEED;
-        } else if (x > targetX) {
-            x -= SPEED;
+        // Calculate direction to player
+        int dx = targetX - x;
+        int dy = targetY - y;
+        
+        // Normalize movement to prevent diagonal speed boost
+        if (Math.abs(dx) > Math.abs(dy)) {
+            x += (dx > 0) ? GameConstants.GHOST_SPEED : -GameConstants.GHOST_SPEED;
+        } else {
+            y += (dy > 0) ? GameConstants.GHOST_SPEED : -GameConstants.GHOST_SPEED;
         }
 
-        if (y < targetY) {
-            y += SPEED;
-        } else if (y > targetY) {
-            y -= SPEED;
-        }
+        // Update bounds position
+        bounds.setLocation(x, y);
+
+        // Update movement state
+        isMoving = (Math.abs(x - lastX) > GameConstants.MOVEMENT_THRESHOLD || 
+                   Math.abs(y - lastY) > GameConstants.MOVEMENT_THRESHOLD);
     }
 
     public void draw(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+        
+        // Enable anti-aliasing for smoother graphics
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // Draw ghost with gradient effect
+        g2.setColor(GameConstants.GHOST_COLOR);
+        g2.fillArc(x, y, GameConstants.GHOST_SIZE, GameConstants.GHOST_SIZE, 0, 180);
 
-        g2.setColor(Color.WHITE);
-
-        // Draws the upper half of a circle to represent the ghost's head.
-        // The arc starts at 0 degrees and spans 180 degrees counterclockwise,
-        // forming a smooth top dome using a bounding box of SIZE x SIZE.
-        g2.fillArc(x, y, SIZE, SIZE, 0, 180);
-
-        int waveRadius = SIZE / 6;
-
-        // Draws 3 small adjacent circles under the ghost's head to form the wavy tail.
-        // Each circle is placed side-by-side using its diameter (waveRadius * 2).
+        // Draw wavy tail with smoother curves
+        int waveRadius = GameConstants.GHOST_SIZE / 6;
         for (int i = 0; i < 3; i++) {
-            g2.fillOval(x + i * waveRadius * 2, y + SIZE / 2, waveRadius * 2, waveRadius * 2);
+            g2.fillOval(x + i * waveRadius * 2, y + GameConstants.GHOST_SIZE / 2, waveRadius * 2, waveRadius * 2);
         }
 
-        g2.setColor(Color.BLACK);
-        int eyeSize = SIZE / 6;
-        // Draw the ghost's eyes as two small filled circles.
-        // The eyes are positioned symmetrically on the upper part of the ghost's head.
-        g2.fillOval(x + SIZE / 4, y + SIZE / 4, eyeSize, eyeSize);
-        g2.fillOval(x + 2 * SIZE / 4, y + SIZE / 4, eyeSize, eyeSize);
+        // Draw eyes with better positioning
+        g2.setColor(new java.awt.Color(0, 0, 0, 180));
+        int eyeSize = GameConstants.GHOST_SIZE / 6;
+        int eyeOffset = GameConstants.GHOST_SIZE / 4;
+        g2.fillOval(x + eyeOffset, y + eyeOffset, eyeSize, eyeSize);
+        g2.fillOval(x + GameConstants.GHOST_SIZE - eyeOffset - eyeSize, y + eyeOffset, eyeSize, eyeSize);
+        
+        // Add subtle glow effect
+        g2.setColor(new java.awt.Color(255, 255, 255, 50));
+        g2.drawArc(x - 2, y - 2, GameConstants.GHOST_SIZE + 4, GameConstants.GHOST_SIZE + 4, 0, 180);
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x, y, SIZE, SIZE);
+        return bounds;
+    }
+
+    public boolean isMoving() {
+        return isMoving;
     }
 }

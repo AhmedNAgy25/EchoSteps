@@ -1,5 +1,6 @@
 package echosteps;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -9,6 +10,7 @@ public class Player {
     private int x, y;
     private int dx, dy;
     private boolean isMoving = false;
+    private String direction = "idle"; // "left", "right", "idle"
     private int lastX, lastY;
     private final Rectangle bounds;
     private static final Rectangle[] WALLS = {
@@ -29,52 +31,128 @@ public class Player {
     public void move() {
         lastX = x;
         lastY = y;
-        
-        // Calculate new position
+
         int newX = x + dx;
         int newY = y + dy;
-        
-        // Create temporary bounds for collision detection
+
         bounds.setLocation(newX, newY);
-        
-        // Check wall collisions
+
         boolean canMoveX = true;
         boolean canMoveY = true;
-        
+
         for (Rectangle wall : WALLS) {
             if (bounds.intersects(wall)) {
-                if (wall.width > wall.height) { // Top or bottom wall
+                if (wall.width > wall.height) {
                     canMoveY = false;
-                } else { // Left or right wall
+                } else {
                     canMoveX = false;
                 }
             }
         }
-        
-        // Apply movement if no collision
+
         if (canMoveX) {
             x = newX;
         }
         if (canMoveY) {
             y = newY;
         }
-        
-        // Update bounds position
+
         bounds.setLocation(x, y);
-        
-        // Update movement state
+
         isMoving = (Math.abs(x - lastX) > GameConstants.MOVEMENT_THRESHOLD || 
                    Math.abs(y - lastY) > GameConstants.MOVEMENT_THRESHOLD);
     }
 
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(GameConstants.PLAYER_COLOR);
-        g2d.fillRect(x, y, GameConstants.PLAYER_SIZE, GameConstants.PLAYER_SIZE);
-        
-        // Add a subtle highlight
-        g2d.setColor(GameConstants.PLAYER_HIGHLIGHT);
-        g2d.fillRect(x + 2, y + 2, GameConstants.PLAYER_SIZE - 4, GameConstants.PLAYER_SIZE - 4);
+
+        switch (direction) {
+            case "left":
+                drawFacingLeft(g2d);
+                break;
+            case "right":
+                drawFacingRight(g2d);
+                break;
+            default:
+                drawIdle(g2d);
+                break;
+        }
+    }
+
+    private void drawIdle(Graphics2D g2d) {
+        g2d.setColor(new Color(0, 100, 0)); 
+        g2d.fillRoundRect(x, y, 20, 10, 6, 6);
+
+        g2d.setColor(new Color(255, 220, 180)); 
+        g2d.fillRoundRect(x + 2, y + 5, 15, 10, 6, 6);
+
+        g2d.setColor(Color.BLACK);
+        g2d.fillOval(x + 5, y + 8, 2, 2);
+        g2d.fillOval(x + 11, y + 8, 2, 2); 
+
+        g2d.setColor(new Color(0, 150, 0));
+        g2d.fillRoundRect(x, y + 16, 20, 18, 5, 5);
+
+        g2d.setColor(new Color(60, 60, 60)); 
+        g2d.fillRect(x, y + 34, 20, 3);
+
+        g2d.setColor(new Color(100, 50, 0)); 
+        g2d.fillRoundRect(x + 2, y + 37, 5, 10, 3, 3); 
+        g2d.fillRoundRect(x + 13, y + 37, 5, 10, 3, 3);
+
+        g2d.setColor(new Color(255, 220, 180)); 
+        g2d.fillRoundRect(x - 4, y + 20, 4, 10, 3, 3);  
+        g2d.fillRoundRect(x + 20, y + 20, 4, 10, 3, 3);
+    }
+
+    private void drawFacingLeft(Graphics2D g2d) {
+        g2d.setColor(new Color(0, 100, 0)); 
+        g2d.fillRoundRect(x, y, 20, 10, 6, 6);
+
+        g2d.setColor(new Color(255, 220, 180)); 
+        g2d.fillRoundRect(x + 2, y + 5, 15, 10, 6, 6);
+
+        g2d.setColor(Color.BLACK);
+        g2d.fillOval(x + 4, y + 8, 2, 2);
+        g2d.fillOval(x + 9, y + 8, 2, 2);
+
+        g2d.setColor(new Color(0, 150, 0));
+        g2d.fillRoundRect(x, y + 16, 20, 18, 5, 5);
+
+        g2d.setColor(new Color(60, 60, 60)); 
+        g2d.fillRect(x, y + 34, 20, 3);
+
+        g2d.setColor(new Color(100, 50, 0)); 
+        g2d.fillRoundRect(x + 2, y + 37, 5, 10, 3, 3); 
+        g2d.fillRoundRect(x + 13, y + 37, 5, 10, 3, 3);
+
+        g2d.setColor(new Color(255, 220, 180)); 
+        g2d.fillRoundRect(x - 6, y + 20, 5, 10, 3, 3);
+    }
+
+    private void drawFacingRight(Graphics2D g2d) {
+        g2d.setColor(new Color(0, 100, 0)); 
+        g2d.fillRoundRect(x, y, 20, 10, 6, 6);
+
+        g2d.setColor(new Color(255, 220, 180)); 
+        g2d.fillRoundRect(x + 2, y + 5, 15, 10, 6, 6);
+
+        g2d.setColor(Color.BLACK);
+        g2d.fillOval(x + 8, y + 8, 2, 2);
+        g2d.fillOval(x + 13, y + 8, 2, 2);
+
+        g2d.setColor(new Color(0, 150, 0));
+        g2d.fillRoundRect(x, y + 16, 20, 18, 5, 5);
+
+        g2d.setColor(new Color(60, 60, 60)); 
+        g2d.fillRect(x, y + 34, 20, 3);
+
+        g2d.setColor(new Color(100, 50, 0)); 
+        g2d.fillRoundRect(x + 2, y + 37, 5, 10, 3, 3); 
+        g2d.fillRoundRect(x + 13, y + 37, 5, 10, 3, 3);
+
+        g2d.setColor(new Color(255, 220, 180)); 
+        g2d.fillRoundRect(x + 21, y + 20, 5, 10, 3, 3);
     }
 
     public Rectangle getBounds() {
@@ -85,9 +163,11 @@ public class Player {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT: 
                 if (dx == 0) dx = -GameConstants.PLAYER_SPEED; 
+                direction = "left";
                 break;
             case KeyEvent.VK_RIGHT: 
                 if (dx == 0) dx = GameConstants.PLAYER_SPEED; 
+                direction = "right";
                 break;
             case KeyEvent.VK_UP: 
                 if (dy == 0) dy = -GameConstants.PLAYER_SPEED; 
@@ -102,9 +182,11 @@ public class Player {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT: 
                 if (dx < 0) dx = 0; 
+                direction = "idle";
                 break;
             case KeyEvent.VK_RIGHT: 
                 if (dx > 0) dx = 0; 
+                direction = "idle";
                 break;
             case KeyEvent.VK_UP: 
                 if (dy < 0) dy = 0; 
@@ -125,5 +207,13 @@ public class Player {
 
     public boolean isMoving() {
         return isMoving;
+    }
+
+    public void setDirection(String dir) {
+        this.direction = dir;
+    }
+
+    public String getDirection() {
+        return direction;
     }
 }

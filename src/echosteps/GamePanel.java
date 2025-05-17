@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -27,6 +28,10 @@ public class GamePanel extends JPanel implements ActionListener {
     private int glowTimer = 0;
     private Rectangle[] walls;
     private SoundManager soundManager;
+    
+    // Buffer for static elements
+    private BufferedImage staticBuffer;
+    private Graphics2D staticGraphics;
 
     public GamePanel() {
         coinFont = new Font("Monospaced", Font.BOLD, 24);
@@ -46,9 +51,29 @@ public class GamePanel extends JPanel implements ActionListener {
             new Rectangle(0, GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE, GameConstants.WINDOW_WIDTH, GameConstants.TILE_SIZE) // Bottom wall
         };
 
+        // Create static buffer
+        staticBuffer = new BufferedImage(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        staticGraphics = staticBuffer.createGraphics();
+        staticGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // Draw static elements once
+        drawStaticElements();
+
         resetGame();
         timer = new Timer(GameConstants.GAME_TICK_RATE, this);
         timer.start();
+    }
+
+    private void drawStaticElements() {
+        // Draw background
+        staticGraphics.setColor(GameConstants.BACKGROUND_COLOR);
+        staticGraphics.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
+        
+        // Draw walls
+        staticGraphics.setColor(GameConstants.WALL_COLOR);
+        for (Rectangle wall : walls) {
+            staticGraphics.fill(wall);
+        }
     }
 
     public void startGame() {
@@ -144,21 +169,13 @@ public class GamePanel extends JPanel implements ActionListener {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         
-        // Enable anti-aliasing
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         if (!gameOver) {
-            // Draw background
-            g2d.setColor(GameConstants.BACKGROUND_COLOR);
-            g2d.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
-            
-            // Draw walls
-            g2d.setColor(GameConstants.WALL_COLOR);
-            for (Rectangle wall : walls) {
-                g2d.fill(wall);
-            }
+            // Draw static elements from buffer
+            g2d.drawImage(staticBuffer, 0, 0, null);
 
-            // Draw game entities
+            // Draw dynamic elements
             player.draw(g2d);
             ghost.draw(g2d);
             for (Coin coin : coins) {
@@ -168,6 +185,10 @@ public class GamePanel extends JPanel implements ActionListener {
             // Draw coin counter
             drawCoinCounter(g2d);
         } else {
+            // Draw static elements from buffer
+            g2d.drawImage(staticBuffer, 0, 0, null);
+            
+            // Draw game over message
             g2d.setColor(java.awt.Color.RED);
             g2d.drawString("GAME OVER! Press R to Restart", 300, 300);
         }
@@ -211,5 +232,6 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void cleanup() {
         soundManager.cleanup();
+        staticGraphics.dispose();
     }
 }

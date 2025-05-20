@@ -1,5 +1,6 @@
 package echosteps;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -12,64 +13,84 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class GamePanel extends JPanel implements ActionListener {
-    private Timer timer;
+    private final Timer timer;
+    private boolean playerwon;
     private Player player;
     private ArrayList<Coin> coins;
-    private Ghost ghost;
+    private ArrayList<Ghost> ghosts;
     private boolean gameOver = false;
     private boolean collectedCoin = false;
-    private Font coinFont;
+    private final Font coinFont;
     private int coinsCollected = 0;
     private boolean showCoinGlow = false;
     private int glowTimer = 0;
-    private Rectangle[] walls;
-    private SoundManager soundManager;
-    
-    // Buffer for static elements
-    private BufferedImage staticBuffer;
-    private Graphics2D staticGraphics;
+    private final Rectangle[] walls;
+    private final SoundManager soundManager;
+    private final BufferedImage staticBuffer;
+    private final Graphics2D staticGraphics;
+
+    private String playerName = "";
+    private int currentLevel = 1;
+    private boolean playerWon;
 
     public GamePanel() {
+        this.playerwon = false;
         coinFont = new Font("Monospaced", Font.BOLD, 24);
         setPreferredSize(new Dimension(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT));
         setBackground(GameConstants.BACKGROUND_COLOR);
         setFocusable(true);
         addKeyListener(new KeyInput());
-        
-        // Initialize sound manager
+
         soundManager = new SoundManager();
-        
-        // Initialize walls
+
         walls = new Rectangle[] {
-            new Rectangle(0, 0, GameConstants.TILE_SIZE, GameConstants.WINDOW_HEIGHT), // Left wall
-            new Rectangle(GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE, 0, GameConstants.TILE_SIZE, GameConstants.WINDOW_HEIGHT), // Right wall
-            new Rectangle(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.TILE_SIZE), // Top wall
-            new Rectangle(0, GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE, GameConstants.WINDOW_WIDTH, GameConstants.TILE_SIZE) // Bottom wall
+                new Rectangle(0, 0, GameConstants.TILE_SIZE, GameConstants.WINDOW_HEIGHT),
+                new Rectangle(GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE, 0, GameConstants.TILE_SIZE,
+                        GameConstants.WINDOW_HEIGHT),
+                new Rectangle(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.TILE_SIZE),
+                new Rectangle(0, GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE, GameConstants.WINDOW_WIDTH,
+                        GameConstants.TILE_SIZE)
         };
 
-        // Create static buffer
-        staticBuffer = new BufferedImage(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        staticBuffer = new BufferedImage(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT,
+                BufferedImage.TYPE_INT_ARGB);
         staticGraphics = staticBuffer.createGraphics();
         staticGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        // Draw static elements once
+
         drawStaticElements();
 
+        playerName = JOptionPane.showInputDialog(null, "Enter your name", "Player Name", JOptionPane.PLAIN_MESSAGE);
+        if (playerName == null || playerName.trim().isEmpty()) {
+            System.exit(0);
+        }
+
+        chooseLevel();
         resetGame();
+
         timer = new Timer(GameConstants.GAME_TICK_RATE, this);
         timer.start();
     }
 
+    private int askLevelOnly() {
+        String[] options = { "Level 1 - Easy", "Level 2 - Medium", "Level 3 - Hard" };
+        int choice = JOptionPane.showOptionDialog(null, "Choose a level:", "Level Select",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+
+        if (choice == -1) {
+            return -1;
+        }
+
+        return choice;
+    }
+
     private void drawStaticElements() {
-        // Draw background
         staticGraphics.setColor(GameConstants.BACKGROUND_COLOR);
         staticGraphics.fillRect(0, 0, GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
-        
-        // Draw walls
         staticGraphics.setColor(GameConstants.WALL_COLOR);
         for (Rectangle wall : walls) {
             staticGraphics.fill(wall);
@@ -83,8 +104,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private void resetGame() {
         player = new Player(GameConstants.TILE_SIZE * 2, GameConstants.TILE_SIZE * 2);
         coins = new ArrayList<>();
-        ghost = new Ghost(GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE * 3, 
-                         GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE * 3);
+        ghosts = new ArrayList<>();
         coinsCollected = 0;
         gameOver = false;
 
@@ -93,7 +113,6 @@ public class GamePanel extends JPanel implements ActionListener {
         int safeXMax = GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE - GameConstants.COIN_SIZE;
         int safeYMax = GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE - GameConstants.COIN_SIZE;
 
-        // Generate Random coins
         for (int i = 0; i < GameConstants.INITIAL_COINS; i++) {
             int x, y;
             boolean validPosition;
@@ -104,7 +123,6 @@ public class GamePanel extends JPanel implements ActionListener {
                 Rectangle newCoinBounds = new Rectangle(x, y, GameConstants.COIN_SIZE, GameConstants.COIN_SIZE);
                 validPosition = true;
 
-                // Check if coin intersects with another coin
                 for (Coin c : coins) {
                     if (c.getBounds().intersects(newCoinBounds)) {
                         validPosition = false;
@@ -112,7 +130,6 @@ public class GamePanel extends JPanel implements ActionListener {
                     }
                 }
 
-                // Check if player position intersects with coin position
                 if (player.getBounds().intersects(newCoinBounds)) {
                     validPosition = false;
                 }
@@ -121,15 +138,21 @@ public class GamePanel extends JPanel implements ActionListener {
 
             coins.add(new Coin(x, y));
         }
+
+        for (int i = 0; i < currentLevel; i++) {
+            ghosts.add(new Ghost(GameConstants.WINDOW_WIDTH - GameConstants.TILE_SIZE * (i + 2),
+                    GameConstants.WINDOW_HEIGHT - GameConstants.TILE_SIZE * (i + 2)));
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (!gameOver) {
             player.move();
-            ghost.chasePlayer(player.getX(), player.getY());
+            for (Ghost ghost : ghosts) {
+                ghost.chasePlayer(player.getX(), player.getY());
+            }
 
-            // Check coin collection
             coins.removeIf(coin -> {
                 if (player.getBounds().intersects(coin.getBounds())) {
                     collectedCoin = true;
@@ -144,23 +167,54 @@ public class GamePanel extends JPanel implements ActionListener {
                 glowTimer = GameConstants.COIN_GLOW_DURATION;
                 collectedCoin = false;
                 soundManager.playCoinSound();
+
+                if (coinsCollected % 2 == 0) {
+                    ghosts.add(new Ghost(GameConstants.TILE_SIZE + (int) (Math.random() * 500),
+                            GameConstants.TILE_SIZE + (int) (Math.random() * 300)));
+                    if (GameConstants.GHOST_SPEED < 5) {
+                        GameConstants.GHOST_SPEED += 2;
+                    }
+                }
             }
 
-            // Check win condition
             if (coins.isEmpty()) {
                 gameOver = true;
+                this.playerWon = true;
                 soundManager.playWinSound();
-                System.out.println("🎉 YOU WIN!");
+                JOptionPane.showMessageDialog(this, "🎉 You Win, " + playerName + "!", "Victory",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                int choice = askLevelOnly();
+
+                if (choice == -1) {
+                    System.exit(0);
+                } else {
+
+                    chooseLevel();
+                    resetGame();
+                    gameOver = false;
+                    timer.start();
+
+                }
+            }
+            for (Ghost ghost : ghosts) {
+                if (player.getBounds().intersects(ghost.getBounds())) {
+                    gameOver = true;
+                    soundManager.playLoseSound();
+                    JOptionPane.showMessageDialog(this, "💀 Game Over, " + playerName + "!", "Defeat",
+                            JOptionPane.ERROR_MESSAGE);
+                    break;
+                }
             }
 
-            // Check lose condition
-            if (player.getBounds().intersects(ghost.getBounds())) {
-                gameOver = true;
-                soundManager.playLoseSound();
-                System.out.println("💀 GAME OVER!");
+            if (showCoinGlow) {
+                glowTimer--;
+                if (glowTimer <= 0) {
+                    showCoinGlow = false;
+                }
             }
-
             repaint();
+
         }
     }
 
@@ -168,46 +222,86 @@ public class GamePanel extends JPanel implements ActionListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        
+
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
+
         if (!gameOver) {
-            // Draw static elements from buffer
             g2d.drawImage(staticBuffer, 0, 0, null);
 
-            // Draw dynamic elements
             player.draw(g2d);
-            ghost.draw(g2d);
+            for (Ghost ghost : ghosts) {
+                ghost.draw(g2d);
+            }
             for (Coin coin : coins) {
                 coin.draw(g2d);
             }
 
-            // Draw coin counter
-            drawCoinCounter(g2d);
+            g2d.setColor(new Color(30, 30, 30));
+            g2d.fillRect(0, 0, GameConstants.WINDOW_WIDTH, 40);
+
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(new Font("SansSerif", Font.BOLD, 18));
+            g2d.drawString("Player: " + playerName, 20, 25);
+            g2d.drawString("Level: " + currentLevel, GameConstants.WINDOW_WIDTH - 140, 25);
+
         } else {
-            // Draw static elements from buffer
             g2d.drawImage(staticBuffer, 0, 0, null);
-            
-            // Draw game over message
-            g2d.setColor(java.awt.Color.RED);
+            g2d.setColor(Color.RED);
             g2d.drawString("GAME OVER! Press R to Restart", 300, 300);
         }
+        drawCoinCounter(g2d);
+
+    }
+
+    private void chooseLevel() {
+
+        int choice = askLevelOnly();
+        if (choice == -1) {
+            System.exit(0);
+        } else {
+            currentLevel = choice + 1;
+
+            switch (currentLevel) {
+                case 1:
+                    GameConstants.GHOST_SPEED = 4;
+                    break;
+                case 2:
+                    GameConstants.GHOST_SPEED = 7;
+                    break;
+                case 3:
+                    GameConstants.GHOST_SPEED = 10;
+                    break;
+                default:
+                    GameConstants.GHOST_SPEED = 4;
+                    break;
+            }
+        }
+
     }
 
     private void drawCoinCounter(Graphics g) {
         if (showCoinGlow && glowTimer > 0) {
-            g.setColor(new java.awt.Color(255, 215, 0));
+            g.setColor(new Color(255, 215, 0));
             glowTimer--;
         } else {
-            g.setColor(new java.awt.Color(255, 223, 0));
+            g.setColor(new Color(255, 223, 0));
             showCoinGlow = false;
         }
 
         g.setFont(coinFont);
-        g.fillOval(20, 10, 16, 16);
-        g.setColor(java.awt.Color.BLACK);
-        g.drawOval(20, 10, 16, 16);
-        g.drawString("x " + coinsCollected, 45, 28);
+
+        String cointText = "x " + coinsCollected;
+        int cointTextWidth = g.getFontMetrics().stringWidth(cointText);
+        int centerX = GameConstants.WINDOW_WIDTH / 2;
+        int coinIconSize = 16;
+        int totalWidth = coinIconSize + 5 + cointTextWidth;
+        int coinStartX = centerX - totalWidth / 2;
+        g.fillOval(coinStartX, 10, coinIconSize, coinIconSize);
+        g.setColor(Color.BLACK);
+        g.drawOval(coinStartX, 10, coinIconSize, coinIconSize);
+
+        g.setColor(Color.WHITE);
+        g.drawString(cointText, coinStartX + coinIconSize + 5, 28);
     }
 
     private class KeyInput extends KeyAdapter {

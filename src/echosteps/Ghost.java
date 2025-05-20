@@ -23,7 +23,7 @@ public class Ghost {
     public void chasePlayer(int targetX, int targetY) {
         lastX = x;
         lastY = y;
-        
+
         moveTimer++;
 
         if (moveTimer % GameConstants.GHOST_MOVE_DELAY != 0) {
@@ -37,7 +37,7 @@ public class Ghost {
         // Calculate direction to player
         int dx = targetX - x;
         int dy = targetY - y;
-        
+
         // Normalize movement to prevent diagonal speed boost
         if (Math.abs(dx) > Math.abs(dy)) {
             x += (dx > 0) ? GameConstants.GHOST_SPEED : -GameConstants.GHOST_SPEED;
@@ -49,16 +49,16 @@ public class Ghost {
         bounds.setLocation(x, y);
 
         // Update movement state
-        isMoving = (Math.abs(x - lastX) > GameConstants.MOVEMENT_THRESHOLD || 
-                   Math.abs(y - lastY) > GameConstants.MOVEMENT_THRESHOLD);
+        isMoving = (Math.abs(x - lastX) > GameConstants.MOVEMENT_THRESHOLD ||
+                Math.abs(y - lastY) > GameConstants.MOVEMENT_THRESHOLD);
     }
 
     public void draw(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        
+
         // Enable anti-aliasing for smoother graphics
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
+
         // Draw ghost with gradient effect
         g2.setColor(GameConstants.GHOST_COLOR);
         g2.fillArc(x, y, GameConstants.GHOST_SIZE, GameConstants.GHOST_SIZE, 0, 180);
@@ -75,7 +75,7 @@ public class Ghost {
         int eyeOffset = GameConstants.GHOST_SIZE / 4;
         g2.fillOval(x + eyeOffset, y + eyeOffset, eyeSize, eyeSize);
         g2.fillOval(x + GameConstants.GHOST_SIZE - eyeOffset - eyeSize, y + eyeOffset, eyeSize, eyeSize);
-        
+
         // Add subtle glow effect
         g2.setColor(new java.awt.Color(255, 255, 255, 50));
         g2.drawArc(x - 2, y - 2, GameConstants.GHOST_SIZE + 4, GameConstants.GHOST_SIZE + 4, 0, 180);

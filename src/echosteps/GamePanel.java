@@ -237,12 +237,12 @@ public class GamePanel extends JPanel implements ActionListener {
             }
 
             g2d.setColor(new Color(30, 30, 30));
-            g2d.fillRect(0, 0, GameConstants.WINDOW_WIDTH, 40);
+            g2d.fillRect(0, 0, GameConstants.WINDOW_WIDTH, 32);
 
             g2d.setColor(Color.WHITE);
             g2d.setFont(new Font("SansSerif", Font.BOLD, 18));
-            g2d.drawString("Player: " + playerName, 20, 25);
-            g2d.drawString("Level: " + currentLevel, GameConstants.WINDOW_WIDTH - 140, 25);
+            g2d.drawString("Player: " + playerName, 20, 22);
+            g2d.drawString("Level: " + currentLevel, GameConstants.WINDOW_WIDTH - 140, 22);
 
         } else {
             g2d.drawImage(staticBuffer, 0, 0, null);
@@ -301,7 +301,7 @@ public class GamePanel extends JPanel implements ActionListener {
         g.drawOval(coinStartX, 10, coinIconSize, coinIconSize);
 
         g.setColor(Color.WHITE);
-        g.drawString(cointText, coinStartX + coinIconSize + 5, 28);
+        g.drawString(cointText, coinStartX + coinIconSize + 5, 25);
     }
 
     private class KeyInput extends KeyAdapter {

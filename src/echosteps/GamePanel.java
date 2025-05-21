@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class GamePanel extends JPanel implements ActionListener {
+    //mohamed
     private final Timer timer;
     private boolean playerwon;
     private Player player;
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private boolean playerWon;
 
     public GamePanel() {
+        //mohamed
         this.playerwon = false;
         coinFont = new Font("Monospaced", Font.BOLD, 24);
         setPreferredSize(new Dimension(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT));
@@ -77,6 +79,7 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private int askLevelOnly() {
+        //mohamed
         String[] options = { "Level 1 - Easy", "Level 2 - Medium", "Level 3 - Hard" };
         int choice = JOptionPane.showOptionDialog(null, "Choose a level:", "Level Select",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
@@ -147,6 +150,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        //mohamed
         if (!gameOver) {
             player.move();
             for (Ghost ghost : ghosts) {

@@ -288,7 +288,7 @@ public class GamePanel extends JPanel implements ActionListener {
             g.setColor(new Color(255, 215, 0));
             glowTimer--;
         } else {
-            g.setColor(new Color(255, 223, 0));
+            g.setColor(new Color(255, 235, 100));
             showCoinGlow = false;
         }
 

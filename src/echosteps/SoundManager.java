@@ -16,9 +16,9 @@ public class SoundManager {
     public SoundManager() {
         try {
             // Load sound effects
-            coinSound = loadSound("sounds/coin.wav");
-            winSound = loadSound("sounds/win.wav");
-            loseSound = loadSound("sounds/lose.wav");
+            coinSound = loadSound("./resources/sounds/coin.wav");
+            winSound = loadSound("./resources/sounds/win.wav");
+            loseSound = loadSound("./resources/sounds/lose.wav");
 
             // Set up volume control for sound effects
             if (coinSound != null) {

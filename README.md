@@ -74,7 +74,7 @@ The game is built using Java Swing for the graphical interface and includes cust
 - 💥 Collision detection
 - 🖥️ Window management
 
-### Team Members
+## Team Members
 
 Thanks to these amazing people for their contributions:
 

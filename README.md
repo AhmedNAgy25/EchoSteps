@@ -41,8 +41,6 @@
 
 ## 🛠️ Under the Hood
 
-# EchoSteps was built from the ground up with:
-
 - Manual game loop using Timer and event-driven updates
 
 - Custom rendering using Graphics2D and double buffering

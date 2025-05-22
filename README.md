@@ -1,6 +1,4 @@
-# Echo Steps
-
-![Logo](https://github.com/user-attachments/assets/cd44b62e-50e1-4021-a2ab-537e395624ad)
+# EchoSteps
 
 - EchoSteps is a 2D Java-based arcade game built using the Swing library. In this game, the player navigates a grid-based map to collect coins while avoiding ghosts. With each level, the difficulty increases by introducing more ghosts and faster challenges. The game features smooth animations, sound effects, and a clean retro UI.
 
@@ -41,9 +39,9 @@
 
 ![Game_Over](https://github.com/user-attachments/assets/536e9fb4-465f-424d-ba71-c158487a35ad)
 
-## Under the Hood
+## 🛠️ Under the Hood
 
-### EchoSteps was built from the ground up with:
+# EchoSteps was built from the ground up with:
 
 - Manual game loop using Timer and event-driven updates
 

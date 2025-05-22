@@ -1,13 +1,8 @@
-# 🎮 Echo Steps
+# Echo Steps
 
 ![Logo](https://github.com/user-attachments/assets/cd44b62e-50e1-4021-a2ab-537e395624ad)
 
-
-A Java-based game where players navigate through levels while managing sound and movement mechanics.
-
-## 📝 Description
-
-Echo Steps is a Java game built using Swing that features unique gameplay mechanics centered around sound and movement. The game includes various elements such as players, ghosts, coins, and sound management systems.
+- EchoSteps is a 2D Java-based arcade game built using the Swing library. In this game, the player navigates a grid-based map to collect coins while avoiding ghosts. With each level, the difficulty increases by introducing more ghosts and faster challenges. The game features smooth animations, sound effects, and a clean retro UI.
 
 ![Game](https://github.com/user-attachments/assets/0b6fc591-f4b5-4642-ae74-ab1b2362011a)
 
@@ -45,6 +40,18 @@ Echo Steps is a Java game built using Swing that features unique gameplay mechan
 - 🖼️ Custom game window and panel implementation
 
 ![Game_Over](https://github.com/user-attachments/assets/536e9fb4-465f-424d-ba71-c158487a35ad)
+
+## Under the Hood
+
+### EchoSteps was built from the ground up with:
+
+- Manual game loop using Timer and event-driven updates
+
+- Custom rendering using Graphics2D and double buffering
+
+- Object-oriented structure with encapsulated game entities
+
+- Simple and extendable architecture for future enhancement
 
 
 ## 💻 Requirements

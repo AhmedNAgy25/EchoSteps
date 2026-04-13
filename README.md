@@ -2,10 +2,12 @@
 
 - EchoSteps is a 2D Java-based arcade game built using the Swing library. In this game, the player navigates a grid-based map to collect coins while avoiding ghosts. With each level, the difficulty increases by introducing more ghosts and faster challenges. The game features smooth animations, sound effects, and a clean retro UI.
 
-![Game](https://github.com/user-attachments/assets/0b6fc591-f4b5-4642-ae74-ab1b2362011a)
+
+https://github.com/user-attachments/assets/a52f7cf3-0354-4d5b-90ec-3d06cceda75f
 
 
-## 📁 Project Structure
+
+## Project Structure
 
 ```
 ├── src/
@@ -23,23 +25,23 @@
 └── .gitignore                     # Git ignore configuration
 ```
 
-## ✨ Features
+## Features
 
 ![Player_Name](https://github.com/user-attachments/assets/c9978a09-6848-41b5-a795-a97e1b1c3bcb)
 
 ![Levels](https://github.com/user-attachments/assets/17d7430f-247d-46f9-9682-767259273fb2)
 
 
-- 🎵 Interactive gameplay with sound-based mechanics
-- 🎯 Player movement and controls
-- 👻 Ghost entities with unique behaviors
-- 💰 Coin collection system
-- 🔊 Sound management system
-- 🖼️ Custom game window and panel implementation
+- Interactive gameplay with sound-based mechanics
+- Player movement and controls
+- Ghost entities with unique behaviors
+- Coin collection system
+- Sound management system
+- Custom game window and panel implementation
 
 ![Game_Over](https://github.com/user-attachments/assets/536e9fb4-465f-424d-ba71-c158487a35ad)
 
-## 🛠️ Under the Hood
+## Under the Hood
 
 - Manual game loop using Timer and event-driven updates
 
@@ -50,12 +52,12 @@
 - Simple and extendable architecture for future enhancement
 
 
-## 💻 Requirements
+## Requirements
 
 - Java Development Kit (JDK) 8 or higher
 - Java Runtime Environment (JRE)
 
-## 🚀 How to Run
+## How to Run
 
 This project includes a `Makefile` to simplify common tasks. Below are the available commands:
 
@@ -83,15 +85,15 @@ From the project root, run any of the commands, for example:
 make restart
 ```
 
-## 🛠️ Development
+## Development
 
 The game is built using Java Swing for the graphical interface and includes custom implementations for:
 
-- 🎮 Game mechanics
-- 🔊 Sound management
-- 👾 Entity behaviors
-- 💥 Collision detection
-- 🖥️ Window management
+- Game mechanics
+- Sound management
+- Entity behaviors
+- Collision detection
+- Window management
 
 ## Team Members
 
